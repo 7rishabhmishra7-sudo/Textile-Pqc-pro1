@@ -20,30 +20,17 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Verify Android SDK
-        run: |
-          echo "Android SDK: $ANDROID_HOME"
-          test -d "$ANDROID_HOME"
-
-      - name: Extract Android project
-        run: |
-          mkdir project
-          unzip -q Textile_PQC_Pro_Android_Project_v1.1.zip -d project
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
 
       - name: Build APK
-        run: |
-          GRADLEW=$(find project -type f -name gradlew | head -n 1)
-          if [ -z "$GRADLEW" ]; then
-            echo "Gradle wrapper not found in ZIP"
-            exit 1
-          fi
-          PROJECT_DIR=$(dirname "$GRADLEW")
-          chmod +x "$GRADLEW"
-          cd "$PROJECT_DIR"
-          ./gradlew --no-daemon assembleDebug
+        run: gradle --no-daemon assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Textile-PQC-Pro-APK
-          path: project/**/build/outputs/apk/debug/*.apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
